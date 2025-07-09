@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block title %}거래량 상위 20위 - UP & down{% endblock %}
+
+{% block content %}
+<h2>거래량 top20 종목</h2>
+<canvas id="top20Chart" width="700" height="500"></canvas>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const chartData = {{ chart_data | safe }};
+
+    const labels = chartData.map(item => item['종목명']);
+    const volumes = chartData.map(item => item['거래량']);
+
+    const ctx = document.getElementById('top20Chart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '최대 거래량',
+                data: volumes,
+                backgroundColor: 'skyblue',
+            }]
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block title %}선호 주식 설정 - UP & down{% endblock %}
+
+{% block content %}
+  <h1>선호 주식 설정</h1>
+
+  <form method="post" autocomplete="off">
+      <label for="stock_input">종목명 검색:</label>
+      <input type="text" name="stock_input" id="stock_input" required>
+      <button type="submit" class="btn btn-primary">추가</button>
+      <div id="suggestions"></div>
+  </form>
+
+  {% if error %}
+    <p class="error-message">{{ error }}</p>
+  {% endif %}
+
+  <section style="margin-top: 40px;">
+    <h2>현재 설정된 선호 주식</h2>
+    {% if stock_display %}
+      <ul>
+        {% for stock in stock_display %}
+          <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <a href="{{ url_for('stocks_search_bp.search') }}?search={{ stock.name }}" style="color: #007bff; text-decoration: none;">
+              {{ stock.name }}
+            </a>
+            <form method="post" action="{{ url_for('users_prefer_stock_bp.delete_prefer_stock', stock_name=stock.name) }}" style="margin:0;">
+              <button type="submit" class="btn btn-outline" style="background-color:#dc3545; color:white; border:none; border-radius:30px; padding:5px 10px; cursor:pointer;">
+                삭제
+              </button>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>등록된 선호 주식이 없습니다.</p>
+    {% endif %}
+  </section>
+
+  <a href="{{ url_for('web_index_bp.index') }}" class="btn btn-outline" >
+    ← 메인화면으로 돌아가기
+  </a>
+
+  <script>
+      const stockList = {{ stock_list_json | safe }};
+  </script>
+  <script src="{{ url_for('static', filename='js/prefer_stock_search.js') }}"></script>
+{% endblock %}

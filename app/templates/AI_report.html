@@ -1,0 +1,51 @@
+
+{% extends 'layout.html' %}
+
+{% block title %}AI 주가 예측 리포트{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">AI 주가 예측 리포트</h1>
+
+    <form method="GET" action="{{ url_for('ai_report_bp.ai_report') }}">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" name="stock_name" placeholder="종목명을 입력하세요 (예: 삼성전자)" value="{{ stock_name or '' }}">
+            <button class="btn btn-primary" type="submit">분석하기</button>
+        </div>
+    </form>
+
+    {% if stock_name %}
+        <hr>
+        <h2 class="mt-4">{{ stock_name }} 예측 결과</h2>
+        {% if prediction %}
+            {% if prediction.error %}
+                <div class="alert alert-danger mt-3">
+                    <strong>오류:</strong> {{ prediction.error }}
+                </div>
+            {% else %}
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h5 class="card-title">다음 날 주가 예측</h5>
+                        <p class="card-text">
+                            예측 결과: 
+                            <span class="fw-bold {% if prediction.prediction == '상승' %}text-success{% else %}text-danger{% endif %}">
+                                {{ prediction.prediction }}
+                            </span>
+                        </p>
+                        <p class="card-text">
+                            상승 확률: <span class="fw-bold text-success">{{ prediction.probability.up }}</span>
+                        </p>
+                        <p class="card-text">
+                            하락 확률: <span class="fw-bold text-danger">{{ prediction.probability.down }}</span>
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-warning mt-3">
+                예측 결과를 가져올 수 없습니다. 종목명을 확인해주세요.
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

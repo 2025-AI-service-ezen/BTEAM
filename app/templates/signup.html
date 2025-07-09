@@ -1,0 +1,75 @@
+{% extends 'layout.html' %}
+
+{% block title %}회원가입{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+<div class="container auth-container">
+
+    <!-- 회원가입 카드 -->
+    <div class="card auth-card">
+        <div class="card-header">회원가입</div>
+        <div class="card-body">
+
+            {% if error %}
+            <!-- 에러 모달 -->
+            <div id="errorModal" class="modal">
+                <div class="modal-content">
+                    <span class="close-btn">&times;</span>
+                    <p>{{ error }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="post" action="{{ url_for('users_signup_bp.signup') }}">
+                <label for="signup-id">아이디</label>
+                <input type="text" id="signup-id" name="userid" placeholder="아이디를 입력하세요" required />
+
+                <label for="signup-pw">비밀번호</label>
+                <input type="password" id="signup-pw" name="password" placeholder="비밀번호를 입력하세요" required />
+
+                <label for="signup-pw2">비밀번호 확인</label>
+                <input type="password" id="signup-pw2" name="password2" placeholder="비밀번호를 다시 입력하세요" required />
+
+                <label for="signup-name">이름</label>
+                <input type="text" id="signup-name" name="name" placeholder="이름을 입력하세요" required />
+
+                <label for="signup-birth">생년월일</label>
+                <input type="text" id="signup-birth" name="birthdate" placeholder="예: 19990101" required />
+
+                <label for="signup-email">이메일</label>
+                <input type="email" id="signup-email" name="email" placeholder="이메일을 입력하세요" required />
+
+                <label for="signup-phone">전화번호</label>
+                <input type="text" id="signup-phone" name="phone" placeholder="전화번호를 입력하세요" required />
+
+                <button type="submit" class="btn btn-primary full">회원가입</button>
+            </form>
+
+            <p class="auth-link">
+                이미 계정이 있으신가요? <a href="{{ url_for('users_login_bp.login') }}">로그인</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("errorModal");
+    const closeBtn = document.querySelector(".close-btn");
+
+    if (modal && closeBtn) {
+        closeBtn.onclick = function () {
+            modal.style.display = "none";
+        };
+
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        };
+    }
+});
+</script>
+{% endblock %}

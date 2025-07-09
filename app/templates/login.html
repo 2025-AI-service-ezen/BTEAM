@@ -1,0 +1,67 @@
+{% extends 'layout.html' %}
+
+{% block title %}로그인 - UP & down{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="card auth-card">
+        <div class="card-header">로그인</div>
+        <div class="card-body">
+        <form method="POST" action="{{ url_for('users_login_bp.login') }}">
+            <label for="login-id">아이디</label>
+            <input type="text" id="login-id" name="userid" placeholder="아이디를 입력하세요" required />
+
+            <label for="login-pw">비밀번호</label>
+            <input type="password" id="login-pw" name="password" placeholder="비밀번호를 입력하세요" required />
+
+            <button type="submit" class="btn btn-primary full">로그인</button>
+        </form>
+        <p class="auth-link">아직 회원이 아니신가요? <a href="{{ url_for('users_signup_bp.signup') }}">회원가입</a></p>
+        </div>
+    </div>
+</div>
+
+<!-- 모달 알림창 -->
+<div id="alertModal" class="modal">
+    <div class="modal-content">
+        <p id="alertMessage">에러 메시지</p>
+        <button onclick="closeModal()">확인</button>
+    </div>
+</div>
+
+<div id="successModal" class="modal">
+    <div class="modal-content">
+        <h2>회원가입 완료 🎉</h2>
+        <p>이제 로그인해 주세요.</p>
+        <button onclick="closeModal()">확인</button>
+    </div>
+</div>
+
+<script>
+    function showModal(message) {
+        document.getElementById('alertMessage').textContent = message;
+        document.getElementById('alertModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('alertModal').style.display = 'none';
+        document.getElementById('successModal').style.display = 'none';
+        history.replaceState(null, "", location.pathname);
+    }
+
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+
+    window.onload = function () {
+        if (getQueryParam("success") === "1") {
+        document.getElementById("successModal").style.display = "flex";
+        }
+
+        {% if error %}
+        showModal("{{ error }}");
+        {% endif %}
+    };
+</script>
+{% endblock %}

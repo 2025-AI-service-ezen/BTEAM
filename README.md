@@ -34,14 +34,19 @@
     cd your-repo-name
     ```
 
-2.  **가상환경 생성 및 활성화:**
+2.  **Conda 환경 생성 및 활성화:**
     ```bash
-    python -m venv venv
-    source venv/bin/activate  # macOS/Linux
-    # venv\Scripts\activate    # Windows
+    conda env create -f environment.yml
+    conda activate stock_analysis
     ```
 
-3.  **의존성 설치:**
+3.  **Konlpy 설치 (Conda 환경 활성화 후):**
+    ```bash
+    pip install konlpy
+    ```
+
+4.  **기타 의존성 설치 (필요 시):**
+    - `requirements.txt`에 명시된 다른 패키지 중 `environment.yml`에 포함되지 않은 것이 있다면 설치합니다.
     ```bash
     pip install -r requirements.txt
     ```

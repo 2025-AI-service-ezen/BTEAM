@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}UP & down{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<!-- 전체 레이아웃 감싸는 wrapper -->
+<div class="wrapper">
+
+  <!-- 상단 헤더 -->
+  <header class="header">
+    <h1><a href="{{ url_for('web_index_bp.index') }}" class="logo-link">UP & down</a></h1>
+
+    <div class="header-buttons">
+      {% if session.get('user') %}
+        <!-- 로그인 상태 -->
+        <a href="{{ url_for('users_profile_bp.profile') }}"><button class="btn btn-outline">내 정보</button></a>
+        <a href="{{ url_for('users_logout_bp.logout') }}"><button class="btn btn-outline">로그아웃</button></a>
+
+        <!-- 📌 오른쪽 하단 선호 주식 버튼 이부분을 링크가 아닌 버튼으로 수정했습니다 --> 
+        <button id="preferToggle" class="btn btn-primary">📈 선호 주식 설정</button>
+        
+      {% else %}
+        <!-- 비로그인 상태 -->
+        <a href="{{ url_for('users_login_bp.login') }}"><button class="btn btn-outline">로그인</button></a>
+        <a href="{{ url_for('users_signup_bp.signup') }}"><button class="btn btn-primary">회원가입</button></a>
+      {% endif %}
+      <button id="modeToggle" class="btn btn-outline">🌙</button>
+    </div>
+  </header>
+
+  <!-- 본문 -->
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- 푸터 -->
+  <footer>
+    &copy; 2025 AI 주식 어드바이저. 모든 권리 보유.
+  </footer>
+
+</div>
+
+<!-- 다크모드 토글 스크립트 -->
+<script>
+  const toggle = document.getElementById('modeToggle');
+  const body = document.body;
+
+  if (localStorage.getItem('mode') === 'dark') {
+    body.classList.add('dark-mode');
+    toggle.textContent = '☀️';
+  }
+
+  toggle.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+    const isDark = body.classList.contains('dark-mode');
+    toggle.textContent = isDark ? '☀️' : '🌙';
+    localStorage.setItem('mode', isDark ? 'dark' : 'light');
+  });
+</script>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>

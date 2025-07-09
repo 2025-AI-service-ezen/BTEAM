@@ -1,0 +1,183 @@
+{% extends "layout.html" %}
+
+{% block title %}홈 - UP & down{% endblock %}
+
+{% block content %}
+    {% if session.get('user') %}
+        <p>{{ session.get('user') }}님 환영합니다!</p>
+    {% else %}
+        <p>로그인 후 이용 가능합니다.</p>
+    {% endif %}
+
+<!-- 🔍 검색 섹션 -->
+<div class="search-section">
+  <form method="POST" action="{{ url_for('stocks_search_bp.search') }}" onsubmit="return checkLogin();" autocomplete="off">
+    <div class="search-line">
+      <input
+        type="text"
+        id="indexSearchInput"
+        name="search"
+        placeholder="종목명 검색"
+        {% if not session.get('user') %}disabled{% endif %}
+      >
+      <button type="submit" class="btn btn-primary" {% if not session.get('user') %}disabled{% endif %}>검색</button>
+  </form>
+</div>
+<div id="indexAutocompleteList"></div>
+
+    <!-- 📌 오른쪽 하단 선호 주식 슬라이드 팝업 이 부분추가됨 -->
+    <div id="preferPopup" class="prefer-popup">
+        <div class="prefer-popup-header">
+            <span>📊 선호 주식 설정</span>
+            <button id="preferPopupClose" class="prefer-popup-close">✖</button>
+        </div>
+        <div class="prefer-popup-body">
+            {% include 'prefer_stock.html' %}
+        </div>
+    </div>
+
+    <!-- 📈 상승/하락 카드 -->
+    <div class="card" style="margin-top: 40px;">
+        <div class="card-header">📈 상승 📉 하락</div>
+        <div class="card-body">
+        <div class="row">
+            <!-- 상승 -->
+            <div class="col">
+            <div class="section-title up">상승 종목</div>
+            <div class="chart-box"><canvas id="chart-up"></canvas></div>
+            <div class="news-box">
+                <strong>📢 상승 뉴스:</strong>
+                <p>{{ up_news }}</p>
+            </div>
+            </div>
+            <!-- 하락 -->
+            <div class="col">
+            <div class="section-title down">하락 종목</div>
+            <div class="chart-box"><canvas id="chart-down"></canvas></div>
+            <div class="news-box">
+                <strong>📉 하락 뉴스:</strong>
+                <p>{{ down_news }}</p>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+<!-- 📊 거래량 TOP5 & AI 추천 리포트 -->
+<div class="row" style="margin-top: 150px;">
+    <!-- 거래량 차트 -->
+    <div class="col">
+        <div class="card">
+        <div class="card-header secondary flex-between">
+            <span>인기 주식 동향</span>
+            <button id="showTop20Btn" class="btn btn-outline" {% if not session.get('user') %}disabled{% endif %}>
+            거래량 TOP20
+        </button>
+        </div>
+        <canvas id="volumeChart"></canvas>
+        </div>
+    </div>
+
+    <!-- AI 추천 리포트 -->
+    <div class="col">
+        <div class="card">
+        <div class="card-header secondary">🤖 AI 추천 리포트</div>
+        <div class="card-body">
+            <ul>
+            {% for report in ai_reports %}
+                <li>{{ report }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/autocomplete.js') }}"></script>
+
+    <script>
+        const isLogin = {{ 'true' if session.get('user') else 'false' }};
+        const chartData = {{ initial_stocks_json | safe }};
+        const labels = chartData.map(item => item['종목명']);
+        const volumes = chartData.map(item => item['거래량']);
+
+        // 거래량 TOP5 차트
+        const ctx = document.getElementById('volumeChart').getContext('2d');
+        const volumeChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+            label: '최대 거래량',
+            data: volumes,
+            backgroundColor: 'skyblue',
+            }]
+        },
+        options: {
+            onClick: (e, activeElements) => {
+            if (!isLogin) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+            if (activeElements.length > 0) {
+                const index = activeElements[0].index;
+                const selectedStock = labels[index];
+                window.location.href = `/search?search=${encodeURIComponent(selectedStock)}`;
+            } else {
+                openTop20Popup();
+            }
+            },
+            scales: {
+            y: { beginAtZero: true }
+            }
+        }
+        });
+
+        document.getElementById('showTop20Btn').addEventListener('click', () => {
+        if (!isLogin) {
+            alert('로그인이 필요합니다.');
+            return;
+        }
+        openTop20Popup();
+        });
+
+        function openTop20Popup() {
+        window.open('/popup_chart', '거래량 상위 20위', 'width=800,height=600');
+        }
+
+        function checkLogin() {
+        if (!isLogin) {
+            alert('로그인이 필요합니다.');
+            return false;
+        }
+        return true;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            setupAutocomplete("indexSearchInput", "indexAutocompleteList", "/autocomplete");
+        
+            // 이 아래로 수정됨
+            const popup = document.getElementById('preferPopup');
+            const openBtn = document.getElementById('preferToggle');
+            const closeBtn = document.getElementById('preferPopupClose');
+
+            openBtn.addEventListener('click', () => {
+            popup.style.display = 'flex';
+            });
+
+            closeBtn.addEventListener('click', () => {
+            popup.style.display = 'none';
+            });
+
+            // 바깥 클릭 시 닫기 (선택)
+            window.addEventListener('click', (event) => {
+            if (event.target === popup) {
+                popup.style.display = 'none';
+            }
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block title %}종목 검색 - UP & down{% endblock %}
+
+{% block content %}
+<h2>종목 검색</h2>
+<p>{{ user }}님 환영합니다.</p>
+
+<form id="searchForm" method="GET" action="{{ url_for('stocks_search_bp.search') }}" autocomplete="off">
+  <div class="search-line">
+    <input type="text" name="search" id="searchInput" placeholder="종목명 입력" value="{{ search_query }}">
+    <button type="submit" class="btn btn-primary">검색</button>
+  </div>
+</form>
+
+{% if error_message %}
+    <p class="error-message">{{ error_message }}</p>
+{% endif %}
+
+{% if search_result_name %}
+    <h3>검색 종목: {{ search_result_name }}</h3>
+{% elif search_query and not error_message and not price_chart_data_json|length > 2 %}
+    <p>일치하는 종목이 없습니다.</p>
+{% endif %}
+
+{% if price_chart_data_json and price_chart_data_json|length > 2 %}
+    <div id="chart-container" class="card chart-box">
+        <h2>{{ stock_name_for_chart }} 주가</h2>
+        <canvas id="stockChart"></canvas>
+        <div id="priceChartDataContainer" 
+             data-chart-data="{{ price_chart_data_json | safe }}"
+             data-stock-name="{{ stock_name_for_chart | default('') }}"></div>
+    </div>
+{% elif search_query and not error_message %}
+    <p>해당 종목의 유효한 주가 데이터를 찾을 수 없습니다.</p>
+{% endif %}
+
+<div id="news-container" class="card">
+    <h2 style="margin-left: 20px;">뉴스 기사</h2>
+    <div id="news-list">
+        <p>뉴스 기사를 불러오는 중...</p>
+    </div>
+</div>
+
+{% if related_stocks %}
+    <div id="related-stocks-container" class="card">
+        <h3 style="margin-left: 20px;">연관 종목</h3>
+        <ul id="related-stocks-list">
+            {% for stock in related_stocks %}
+                <li class="related-stock-item">
+                    <a href="{{ url_for('stocks_search_bp.search') }}?search={{ stock }}">{{ stock }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% elif search_query and not error_message %}
+    <p>검색된 연관 종목이 없습니다.</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script src="{{ url_for('static', filename='js/autocomplete.js') }}"></script>
+<script src="{{ url_for('static', filename='js/search_chart.js') }}"></script>
+<script src="{{ url_for('static', filename='js/stock_news.js') }}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    window.setupAutocomplete("searchInput", "searchAutocompleteList", "/autocomplete", "{{ url_for('stocks_search_bp.search') }}");
+
+    const exactStockName = "{{ search_result_name | default('') }}".trim();
+
+    if (exactStockName) {
+        window.fetchNewsForStock(exactStockName);
+    } else if ("{{ search_query | default('') }}".trim()) {
+        document.getElementById('news-list').innerHTML = '<p>해당 종목에 대한 뉴스 기사를 찾을 수 없습니다.</p>';
+    }
+});
+</script>
+{% endblock %}
